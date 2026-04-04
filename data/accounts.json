@@ -3,5 +3,15 @@
     "evmAddress": "0xtestuser1",
     "hederaAccountId": "0.0.8511025",
     "privateKey": "84d005c7db5e57d5d01a5e780bd8aa12541c4ca5cf2238a7ddcc211720a0dd94"
+  },
+  {
+    "evmAddress": "0xtestsuite_1775334043732",
+    "hederaAccountId": "0.0.8511165",
+    "privateKey": "6fea6763e9c8bf4e1b3b4e1a5096903344858aacaa709cda7efc6adf11c0b4b6"
+  },
+  {
+    "evmAddress": "0xartist_1775334152641",
+    "hederaAccountId": "0.0.8511186",
+    "privateKey": "d4b9b06d52a05d974deb7d7def2776e1f310957741001302c4d9515b5a108385"
   }
 ]
