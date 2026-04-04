@@ -159,3 +159,36 @@ songRoutes.get("/songs", async (c) => {
     return c.json<ApiResponse<never>>({ ok: false, error: msg }, 500);
   }
 });
+
+/**
+ * GET /previews — Return all songs with preview root hashes.
+ * Used by sonos-back to batch-download previews on startup.
+ */
+songRoutes.get("/previews", async (c) => {
+  try {
+    const messages = await getHcsMessages(config.topics.songTopicId, 100, "asc");
+
+    const previews: { songId: string; title: string; artist: string; previewRootHash: string }[] = [];
+    for (const msg of messages) {
+      try {
+        const meta = msg.content as SongMetadata;
+        if (meta.title && meta.previewRootHash) {
+          previews.push({
+            songId: String(msg.sequenceNumber),
+            title: meta.title,
+            artist: meta.artist,
+            previewRootHash: meta.previewRootHash,
+          });
+        }
+      } catch {
+        // Skip malformed entries
+      }
+    }
+
+    return c.json<ApiResponse<typeof previews>>({ ok: true, data: previews });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("GET /previews failed:", msg);
+    return c.json<ApiResponse<never>>({ ok: false, error: msg }, 500);
+  }
+});

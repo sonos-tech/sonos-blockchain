@@ -48,6 +48,30 @@ storageRoutes.post("/upload", async (c) => {
   }
 });
 
+// POST /upload-memory — Upload a raw buffer to 0G (used for preview clips)
+storageRoutes.post("/upload-memory", async (c) => {
+  const tempPath = join(tmpdir(), `sonos-membuf-${Date.now()}`);
+  try {
+    const buffer = await c.req.arrayBuffer();
+    if (!buffer || buffer.byteLength === 0) {
+      return c.json<ApiResponse<never>>({ ok: false, error: "request body required" }, 400);
+    }
+
+    await Bun.write(tempPath, buffer);
+    const rootHash = await uploadFile(tempPath);
+    return c.json<ApiResponse<{ rootHash: string }>>({
+      ok: true,
+      data: { rootHash },
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("POST /storage/upload-memory failed:", msg);
+    return c.json<ApiResponse<never>>({ ok: false, error: msg }, 500);
+  } finally {
+    await unlink(tempPath).catch(() => {});
+  }
+});
+
 // GET /download/:rootHash — Download a file from 0G and stream it back
 storageRoutes.get("/download/:rootHash", async (c) => {
   const rootHash = c.req.param("rootHash");
