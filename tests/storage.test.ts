@@ -175,10 +175,11 @@ describe("composite song upload", () => {
     const res = await fetch(`${BASE}/song/upload`, { method: "POST", body: form });
     const data = await res.json() as any;
 
+    if (!data.ok) console.error("Song upload error:", data.error);
     expect(data.ok).toBe(true);
     expect(data.data.songId).toBeTruthy();
     expect(data.data.transactionId).toBeTruthy();
-  }, 300_000); // 5min — two 0G uploads can be slow
+  }, 360_000); // 6min — two sequential 0G uploads ~120s each
 
   test("song appears in listing after upload", async () => {
     // Wait for Mirror Node
@@ -194,12 +195,12 @@ describe("composite song upload", () => {
   }, 15_000);
 
   test("artist balance decreased by upload cost", async () => {
-    await new Promise((r) => setTimeout(r, 6000));
+    await new Promise((r) => setTimeout(r, 8000));
     const { data } = await get(`/token/balance/${artistHederaId}`);
     expect(data.ok).toBe(true);
-    // Started with 5000, upload cost is 1000, but 2% auto-fee on transfer
-    // so received ~4900, then 1000 wiped = ~3900
-    expect(data.data.balance).toBeLessThan(5000);
+    // Treasury sends are fee-exempt, so artist received exactly 5000
+    // Upload cost wipe = 1000, so expected balance = 4000
+    expect(data.data.balance).toBeLessThanOrEqual(4000);
     expect(data.data.balance).toBeGreaterThan(0);
   }, 15_000);
 });

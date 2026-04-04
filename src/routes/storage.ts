@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, basename } from "node:path";
 import { unlink, mkdir } from "node:fs/promises";
 
 import { uploadFile, downloadFile } from "../services/storage";
@@ -27,7 +27,8 @@ storageRoutes.post("/upload", async (c) => {
     return c.json<ApiResponse<never>>({ ok: false, error: "file field required (multipart)" }, 400);
   }
 
-  const tempPath = join(tmpdir(), `sonos-upload-${Date.now()}-${file.name}`);
+  const safeName = basename(file.name || "upload");
+  const tempPath = join(tmpdir(), `sonos-upload-${Date.now()}-${safeName}`);
   try {
     // Write uploaded data to a temp file (0G SDK needs a file path)
     const buffer = await file.arrayBuffer();

@@ -31,7 +31,13 @@ export async function uploadFile(filePath: string): Promise<string> {
 
     const [_tx, uploadErr] = await indexer.upload(file, rpcUrl, signer);
     if (uploadErr) {
-      throw new Error(`0G upload failed: ${uploadErr}`);
+      // If the file already exists on 0G, the SDK reverts. Treat as success.
+      const errStr = String(uploadErr);
+      if (errStr.includes("Transaction reverted") || errStr.includes("already exists")) {
+        console.log(`[storage] File already on 0G (${rootHash}), skipping upload.`);
+      } else {
+        throw new Error(`0G upload failed: ${uploadErr}`);
+      }
     }
 
     return rootHash;

@@ -5,7 +5,7 @@
 
 import { Hono } from "hono";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, basename } from "node:path";
 import { unlink } from "node:fs/promises";
 
 import { uploadFile } from "../services/storage";
@@ -56,8 +56,9 @@ songRoutes.post("/upload", async (c) => {
     }, 400);
   }
 
-  const fullPath = join(tmpdir(), `sonos-song-${Date.now()}-${file.name}`);
-  const previewPath = join(tmpdir(), `sonos-preview-${Date.now()}-${file.name}`);
+  const safeName = basename((file as File).name || "song.mp3");
+  const fullPath = join(tmpdir(), `sonos-song-${Date.now()}-${safeName}`);
+  const previewPath = join(tmpdir(), `sonos-preview-${Date.now()}-${safeName}`);
 
   try {
     // 1. Resolve artist
@@ -89,11 +90,9 @@ songRoutes.post("/upload", async (c) => {
       await Bun.write(previewPath, buffer);
     }
 
-    // 5. Upload both to 0G
-    const [fullRootHash, previewRootHash] = await Promise.all([
-      uploadFile(fullPath),
-      uploadFile(previewPath),
-    ]);
+    // 5. Upload to 0G sequentially (same wallet can't sign concurrent txs)
+    const fullRootHash = await uploadFile(fullPath);
+    const previewRootHash = await uploadFile(previewPath);
 
     // 6. Wipe upload cost from artist
     await wipeTokens(account.hederaAccountId, config.economy.uploadCost);
