@@ -25,7 +25,7 @@ export async function getTokenBalance(accountId: string): Promise<number> {
     );
   }
 
-  const data = await res.json();
+  const data: any = await res.json();
   return data.tokens?.[0]?.balance ?? 0;
 }
 
@@ -48,7 +48,7 @@ export async function getHcsMessages(
     );
   }
 
-  const data = await res.json();
+  const data: any = await res.json();
   const messages: HcsMessage[] = [];
 
   for (const msg of data.messages ?? []) {

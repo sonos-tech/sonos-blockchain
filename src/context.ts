@@ -5,7 +5,8 @@
 
 import { createHederaContext } from "./clients/hedera";
 import { create0gContext } from "./clients/0g";
+import { createEthClients } from "./clients/eth";
 
 export const hedera = createHederaContext();
 export const zeroG = create0gContext();
-// eth client added in Phase 5
+export const eth = createEthClients();
