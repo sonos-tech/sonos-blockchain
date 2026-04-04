@@ -3,10 +3,19 @@
   "module": "index.ts",
   "type": "module",
   "private": true,
+  "scripts": {
+    "generate-keys": "bun run scripts/generate-keys.ts",
+    "create-token": "bun --env-file=.env run scripts/create-token.ts",
+    "create-topics": "bun --env-file=.env run scripts/create-topics.ts"
+  },
   "devDependencies": {
     "@types/bun": "latest"
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@hashgraph/sdk": "^2.81.0",
+    "viem": "^2.47.10"
   }
 }
