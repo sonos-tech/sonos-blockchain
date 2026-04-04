@@ -6,7 +6,9 @@
   "scripts": {
     "generate-keys": "bun run scripts/generate-keys.ts",
     "create-token": "bun --env-file=.env run scripts/create-token.ts",
-    "create-topics": "bun --env-file=.env run scripts/create-topics.ts"
+    "create-topics": "bun --env-file=.env run scripts/create-topics.ts",
+    "test:0g-upload": "bun --env-file=.env run scripts/test-0g-upload.ts",
+    "test:0g-download": "bun --env-file=.env run scripts/test-0g-download.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -15,7 +17,9 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@0gfoundation/0g-ts-sdk": "^1.2.1",
     "@hashgraph/sdk": "^2.81.0",
+    "ethers": "^6.16.0",
     "viem": "^2.47.10"
   }
 }
