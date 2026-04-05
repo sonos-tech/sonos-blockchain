@@ -39,13 +39,13 @@ songRoutes.post("/upload", async (c) => {
   const title = body["title"] as string;
   const artist = body["artist"] as string; // EVM address
   const genre = (body["genre"] as string) || undefined;
-  const duration = parseInt(body["duration"] as string, 10);
+  let duration = parseInt(body["duration"] as string, 10) || 0;
   const buyoutPrice = parseInt(body["buyoutPrice"] as string, 10);
 
-  if (!file || !(file instanceof File) || !title || !artist || !duration || !buyoutPrice) {
+  if (!file || !(file instanceof File) || !title || !artist || !buyoutPrice) {
     return c.json<ApiResponse<never>>({
       ok: false,
-      error: "Required: file, title, artist (EVM), duration, buyoutPrice",
+      error: "Required: file, title, artist (EVM), buyoutPrice",
     }, 400);
   }
 
@@ -76,6 +76,24 @@ songRoutes.post("/upload", async (c) => {
     // 3. Write MP3 to temp
     const buffer = await file.arrayBuffer();
     await Bun.write(fullPath, buffer);
+
+    // 3b. Extract duration from file via ffprobe if not provided
+    if (!duration) {
+      try {
+        const probe = Bun.spawn(
+          ["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", fullPath],
+          { stdout: "pipe", stderr: "ignore" },
+        );
+        const out = await new Response(probe.stdout).text();
+        await probe.exited;
+        const parsed = parseFloat(out.trim());
+        if (parsed && Number.isFinite(parsed)) {
+          duration = Math.round(parsed);
+        }
+      } catch {
+        // ffprobe not available — duration stays 0
+      }
+    }
 
     // 4. Generate 30s preview via ffmpeg (fallback: copy full file)
     try {
