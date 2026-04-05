@@ -6,7 +6,7 @@
 import { Hono } from "hono";
 import { tmpdir } from "node:os";
 import { join, basename } from "node:path";
-import { unlink, mkdir } from "node:fs/promises";
+import { unlink, mkdir, readFile } from "node:fs/promises";
 
 import { uploadFile, downloadFile } from "../services/storage";
 import type { ApiResponse } from "../types";
@@ -72,23 +72,31 @@ storageRoutes.post("/upload-memory", async (c) => {
   }
 });
 
-// GET /download/:rootHash — Download a file from 0G and stream it back
+// GET /download/:rootHash — Download a file from 0G and return it
 storageRoutes.get("/download/:rootHash", async (c) => {
   const rootHash = c.req.param("rootHash");
-  const tempPath = join(tmpdir(), `sonos-dl-${rootHash}`);
+  const tempPath = join(tmpdir(), `sonos-dl-${rootHash}-${Date.now()}`);
 
   try {
     await downloadFile(rootHash, tempPath);
-    const data = await Bun.file(tempPath).arrayBuffer();
-    return new Response(data, {
-      headers: { "Content-Type": "audio/mpeg" },
+    // Use Bun.file() — Bun optimizes this with sendfile()
+    const file = Bun.file(tempPath);
+    const size = file.size;
+    const stream = file.stream();
+    // Schedule cleanup after a delay to let streaming finish
+    setTimeout(() => unlink(tempPath).catch(() => {}), 30_000);
+    return new Response(stream, {
+      status: 200,
+      headers: {
+        "Content-Type": "audio/mpeg",
+        "Content-Length": String(size),
+      },
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     console.error("GET /storage/download failed:", msg);
-    return c.json<ApiResponse<never>>({ ok: false, error: msg }, 500);
-  } finally {
     await unlink(tempPath).catch(() => {});
+    return c.json<ApiResponse<never>>({ ok: false, error: msg }, 500);
   }
 });
 

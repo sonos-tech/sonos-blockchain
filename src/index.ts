@@ -45,4 +45,5 @@ console.log(`sonos-blockchain listening on port ${config.port}`);
 export default {
   port: config.port,
   fetch: app.fetch,
+  idleTimeout: 255, // seconds — 0G downloads can take minutes
 };
