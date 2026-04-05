@@ -33,7 +33,7 @@ export async function uploadFile(filePath: string): Promise<string> {
     if (uploadErr) {
       // If the file already exists on 0G, the SDK reverts. Treat as success.
       const errStr = String(uploadErr);
-      if (errStr.includes("Transaction reverted") || errStr.includes("already exists")) {
+      if (errStr.includes("Transaction reverted") || errStr.includes("transaction execution reverted") || errStr.includes("already exists")) {
         console.log(`[storage] File already on 0G (${rootHash}), skipping upload.`);
       } else {
         throw new Error(`0G upload failed: ${uploadErr}`);

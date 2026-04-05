@@ -263,4 +263,38 @@ describe("songs", () => {
     expect(data.ok).toBe(true);
     expect(Array.isArray(data.data)).toBe(true);
   });
+
+  test("previews list returns array", async () => {
+    const data = await get("/song/previews");
+    expect(data.ok).toBe(true);
+    expect(Array.isArray(data.data)).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// sonos-back public endpoints (no auth required)
+// ---------------------------------------------------------------------------
+
+const BACK_BASE = process.env.BACK_URL || "http://localhost:8080";
+
+describe("sonos-back public endpoints", () => {
+  test("backend health check", async () => {
+    const res = await fetch(`${BACK_BASE}/api/health`);
+    const data = await res.json() as any;
+    expect(res.status).toBe(200);
+    expect(data.status).toBe("ok");
+    expect(data.service).toBe("sonos-back");
+  });
+
+  test("GET /api/songs returns array", async () => {
+    const res = await fetch(`${BACK_BASE}/api/songs`);
+    const data = await res.json() as any;
+    expect(res.status).toBe(200);
+    expect(Array.isArray(data)).toBe(true);
+  });
+
+  test("GET /api/songs/:id returns 404 for unknown", async () => {
+    const res = await fetch(`${BACK_BASE}/api/songs/nonexistent-id-999`);
+    expect(res.status).toBe(404);
+  });
 });

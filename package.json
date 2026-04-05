@@ -10,6 +10,7 @@
     "create-token": "bun --env-file=.env run scripts/create-token.ts",
     "create-topics": "bun --env-file=.env run scripts/create-topics.ts",
     "test": "bun test tests/blockchain.test.ts",
+    "test:general": "bun test tests/blockchain.test.ts",
     "test:storage": "bun test tests/storage.test.ts",
     "test:all": "bun test tests/",
     "test:0g-upload": "bun --env-file=.env run scripts/test-0g-upload.ts",
