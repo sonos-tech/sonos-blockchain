@@ -47,9 +47,10 @@ swapRoutes.post("/buy-sonos", async (c) => {
       }, 400);
     }
 
-    // 1. Verify ETH transaction
-    const receipt = await publicClient.getTransactionReceipt({
+    // 1. Verify ETH transaction (wait for it to be mined)
+    const receipt = await publicClient.waitForTransactionReceipt({
       hash: txHash as `0x${string}`,
+      timeout: 120_000,
     });
     if (receipt.status !== "success") {
       return c.json<ApiResponse<never>>({ ok: false, error: "ETH transaction failed" }, 400);
